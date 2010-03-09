@@ -3,7 +3,7 @@
 Plugin Name: Footnotes for WordPress
 Plugin URI: http://projects.radgeek.com/wp-footnotes.php
 Description: easy-to-use fancy footnotes for WordPress posts
-Version: 2010.0306
+Version: 2010.0309
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -11,7 +11,7 @@ License: GPL
 
 /**
  * @package FootnotesForWordPress
- * @version 2010.0306
+ * @version 2010.0309
  */
 
 class FootnotesForWordPress {
@@ -84,7 +84,7 @@ EON;
 		return '<sup>[<a href="#'.$noteId.'" class="footnoted" id="'.$atts['backlink-prefix'].$noteId.'">'.$bullet.'</a>]</sup>';
 	} /* FootnotesForWordPress::shortcode */
 
-	function discharge ($atts, $content = NULL, $code = '') {
+	function discharge ($atts = array(), $content = NULL, $code = '') {
 		$notes = '';
 		if (count($this->accumulated) > 0) :
 			$notes = "<ol class=\"footnotes\">\n\t"

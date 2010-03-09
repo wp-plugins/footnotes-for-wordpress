@@ -4,7 +4,7 @@ Donate link: http://projects.radgeek.com/wp-footnotes/
 Tags: footnotes, formatting
 Requires at least: 2.9
 Tested up to: 2.9.2
-Stable tag: 2010.0306
+Stable tag: 2010.0309
 
 Footnotes for WordPress enables easy-to-use fancy footnotes for WordPress posts.
 
@@ -93,4 +93,9 @@ the "See also:" text.
 
 	See also: Endnotes.
 
+== ChangeLog ==
+
+=== Changes from version 2010.0306 to version 2010.0309 ===
+
+* Eliminates a harmless but potentially annoying source of "Missing argument" warnings from PHP
 
