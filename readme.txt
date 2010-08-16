@@ -33,6 +33,15 @@ can do so using the `name="..."` attribute:
 
 	This is footnoted.[ref name="my-unique-id-1"]Text[/ref]
 
+If you define an ID for a footnote, you can also refer back to the same footnote
+later on in the document, using the `[backref name="..."]` shortcode.
+
+	This is footnoted.[ref name="source1"]Source 1[/ref]
+	
+	So is this.[ref name="source2"]Source[/ref]
+	
+	And this one comes from the same source as the first.[backref name="source1"]
+	
 By default, the list of footnotes appears at the bottom of the post. However, if you
 wish them to appear somewhere above the bottom of the post, for formatting or other
 reasons, you can do so using the `[references/]` shortcode:
