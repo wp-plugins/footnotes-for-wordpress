@@ -152,6 +152,7 @@ function appendInlineButton(link) {
 }
 
 function inlineViewClickHandler(anEvent) {
+	console.log("Hello!");
 	// Kludge-tastic
 	var event = (anEvent ? anEvent : window.event);
 	var target;

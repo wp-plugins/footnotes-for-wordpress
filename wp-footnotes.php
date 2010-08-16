@@ -3,7 +3,7 @@
 Plugin Name: Footnotes for WordPress
 Plugin URI: http://projects.radgeek.com/wp-footnotes.php
 Description: easy-to-use fancy footnotes for WordPress posts
-Version: 2010.0309
+Version: 2010.0816
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -11,52 +11,71 @@ License: GPL
 
 /**
  * @package FootnotesForWordPress
- * @version 2010.0309
+ * @version 2010.0816
  */
+define('FFWP_VERSION', '2010.0816');
 
 class FootnotesForWordPress {
 	var $accumulated;
 
-	function add_scripts () {
-		$url = str_replace(WP_PLUGIN_DIR, WP_PLUGIN_URL, dirname(__FILE__));
+	function FootnotesForWordPress () { // constructor
+		$this->accumulated = array();
 
-		wp_enqueue_script(
-			'footnote-voodoo',
-			$url.'/footnote-voodoo.js',
-			/*depends on=*/ array('jquery'),
-			/*ver=*/ '2010.0306'
+		$url = $this->plugin_url();
+		wp_register_script('footnote-voodoo', "${url}footnote-voodoo.js", /*depends on=*/ array('jquery'), /*ver=*/ FFWP_VERSION);
+		wp_register_style('footnote-voodoo', "${url}footnote-voodoo.css", /*depends on=*/ array(), /*ver=*/ FFWP_VERSION);
+
+		add_shortcode('ref', array(&$this, 'shortcode'));
+		add_shortcode('backref', array(&$this, 'backref'));
+		add_shortcode('references', array(&$this, 'discharge'));
+		
+		// Way downstream; needs to be after do_shortcode (priority 11), for one thing
+		add_filter('the_content', array(&$this, 'the_content'), 1000, 2);
+		
+		add_action('init', array(&$this, 'add_scripts'));
+		add_action('wp_head', array(&$this, 'add_inline_styles'));
+	} /* FootnotesForWordPress constructor */
+
+	function plugin_url () {
+		preg_match (
+			'|'.WP_PLUGIN_DIR.'/(.+)$|',
+			dirname(__FILE__),
+			$ref
 		);
-		wp_enqueue_style(
-			'footnote-vodoo',
-			$url.'/footnote-voodoo.css',
-			/*depends on=*/ array(),
-			/*ver=*/ '2010.0306'
-		);
+		
+		if (isset($ref[1])) :
+			$path = $ref[1];
+		else : // Something went wrong. Let's just guess.
+			$path = 'wp-footnotes';
+		endif;
+		return trailingslashit(WP_PLUGIN_URL.'/'.$path);
+	}
+	function add_scripts () {
+		wp_enqueue_script('footnote-voodoo');
+		wp_enqueue_style('footnote-voodoo');
 	}
 	function add_inline_styles () {
 	?>
 <style type="text/css">
 
 	.footnote-indicator:before {
-		content: url(<?php print str_replace(WP_PLUGIN_DIR, WP_PLUGIN_URL, dirname(__FILE__)); ?>/footnoted.png);
+		content: url(<?php print $this->plugin_url(); ?>footnoted.png);
 		width: 10px;
 		height: 10px;
 	}
 	ol.footnotes li {
-		background: #eeeeee url(<?php print trailingslashit(str_replace(WP_PLUGIN_DIR, WP_PLUGIN_URL, dirname(__FILE__))); ?>note.png) 0px 0px repeat-x;
+		background: #eeeeee url(<?php print $this->plugin_url(); ?>note.png) 0px 0px repeat-x;
 	}
 </style>
 <script type="text/javascript">
 	// Globals
-	var tipUpUrl = 'url(<?php print str_replace(WP_PLUGIN_DIR, WP_PLUGIN_URL, dirname(__FILE__)); ?>/tip.png)';
-	var tipDownUrl = 'url(<?php print str_replace(WP_PLUGIN_DIR, WP_PLUGIN_URL, dirname(__FILE__)); ?>/tip-down.png)';
+	var tipUpUrl = 'url(<?php print $this->plugin_url(); ?>tip.png)';
+	var tipDownUrl = 'url(<?php print $this->plugin_url(); ?>tip-down.png)';
 </script>
 	<?php
 	}
-	function FootnotesForWordPress () {
-		$this->accumulated = array();
-	} /* FootnotesForWordPress constructor */
 
+	var $bullets = array();
 	function shortcode ($atts, $content = NULL, $code = '') {
 		global $post;
 
@@ -66,12 +85,13 @@ class FootnotesForWordPress {
 			'backlink-prefix' => 'to-',
 		), $atts );
 
-		$bullet = (count($this->accumulated) + 1);
 		$noteId = $atts['name'];
+		$bullet = (count($this->accumulated) + 1);
 		if (is_null($noteId) and !is_null($post)) :
 			$noteId = $post->post_name.'-n-'.$bullet;
 		endif;
-
+		$this->bullets[$noteId] = $bullet;
+		
 		// Allow any inside shortcodes to do their work.
 		$content = do_shortcode($content);
 		$note_marker = "<strong><sup>[$bullet]</sup></strong>";
@@ -84,6 +104,23 @@ EON;
 		return '<sup>[<a href="#'.$noteId.'" class="footnoted" id="'.$atts['backlink-prefix'].$noteId.'">'.$bullet.'</a>]</sup>';
 	} /* FootnotesForWordPress::shortcode */
 
+	function backref ($atts = array(), $content = NULL, $code = '') {
+		// Get parameters
+		$atts = shortcode_atts( array(
+			"name" => NULL,
+			'backlink-prefix' => 'to-',
+		), $atts );
+
+		$bullet = $this->bullets[$atts['name']];
+
+		if (!is_null($atts['name'])) :
+			$ret = '<sup>[<a href="#'.$atts['name'].'" class="footnoted">'.$bullet.'</a>]</sup>';
+		else :
+			$ret = '';
+		endif;
+
+		return $ret;
+	}
 	function discharge ($atts = array(), $content = NULL, $code = '') {
 		$notes = '';
 		if (count($this->accumulated) > 0) :
@@ -105,13 +142,4 @@ EON;
 } /* class FootnotesForWordPress */
 
 $footnotesForWordPress = new FootnotesForWordPress;
-
-add_shortcode('ref', array($footnotesForWordPress, 'shortcode'));
-add_shortcode('references', array($footnotesForWordPress, 'discharge'));
-
-// Way downstream; needs to be after do_shortcode (priority 11), for one thing
-add_filter('the_content', array($footnotesForWordPress, 'the_content'), 1000, 2);
-
-add_action('init', array($footnotesForWordPress, 'add_scripts'));
-add_action('wp_head', array($footnotesForWordPress, 'add_inline_styles'));
 
