@@ -89,11 +89,15 @@ class FootnotesForWordPress {
 		), $atts );
 
 		$noteId = $atts['name'];
-		$bullet = (count($this->accumulated) + 1);
+		if (!isset($this->bullets[$post->post_name])) :
+			$this->bullets[$post->post_name] = array();
+		endif;
+		
+		$bullet = (count($this->bullets[$post->post_name]) + 1);
 		if (is_null($noteId) and !is_null($post)) :
 			$noteId = $post->post_name.'-n-'.$bullet;
 		endif;
-		$this->bullets[$noteId] = $bullet;
+		$this->bullets[$post->post_name][$noteId] = $bullet;
 		
 		// Allow any inside shortcodes to do their work.
 		$content = do_shortcode($content);
@@ -108,13 +112,15 @@ EON;
 	} /* FootnotesForWordPress::shortcode */
 
 	function backref ($atts = array(), $content = NULL, $code = '') {
+		global $post;
+
 		// Get parameters
 		$atts = shortcode_atts( array(
 			"name" => NULL,
 			'backlink-prefix' => 'to-',
 		), $atts );
 
-		$bullet = $this->bullets[$atts['name']];
+		$bullet = $this->bullets[$post->post_name][$atts['name']];
 
 		if (!is_null($atts['name'])) :
 			$ret = '<sup>[<a href="#'.$atts['name'].'" class="footnoted">'.$bullet.'</a>]</sup>';
