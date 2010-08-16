@@ -36,19 +36,22 @@ class FootnotesForWordPress {
 		add_action('wp_head', array(&$this, 'add_inline_styles'));
 	} /* FootnotesForWordPress constructor */
 
+	var $plugin_path = NULL;
 	function plugin_url () {
-		preg_match (
-			'|'.WP_PLUGIN_DIR.'/(.+)$|',
-			dirname(__FILE__),
-			$ref
-		);
-		
-		if (isset($ref[1])) :
-			$path = $ref[1];
-		else : // Something went wrong. Let's just guess.
-			$path = 'wp-footnotes';
+		if (is_null($this->plugin_path)) :
+			preg_match (
+				'|'.WP_PLUGIN_DIR.'/(.+)$|',
+				dirname(__FILE__),
+				$ref
+			);
+			
+			if (isset($ref[1])) :
+				$this->plugin_path = $ref[1];
+			else : // Something went wrong. Let's just guess.
+				$this->plugin_path = 'footnotes-for-wordpress';
+			endif;
 		endif;
-		return trailingslashit(WP_PLUGIN_URL.'/'.$path);
+		return trailingslashit(WP_PLUGIN_URL.'/'.$this->plugin_path);
 	}
 	function add_scripts () {
 		wp_enqueue_script('footnote-voodoo');
