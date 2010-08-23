@@ -4,7 +4,7 @@ Donate link: http://projects.radgeek.com/wp-footnotes/
 Tags: footnotes, formatting
 Requires at least: 2.9
 Tested up to: 3.0.1
-Stable tag: 2010.0816
+Stable tag: 2010.0822
 
 Footnotes for WordPress enables easy-to-use fancy footnotes for WordPress posts.
 
@@ -89,6 +89,16 @@ the "See also:" text.
 
     Example: `This is footnoted.[ref name="my-unique-id"]This is the note text.[/ref]`
 
+*   If you define an ID for a footnote, you can also refer back to the same
+    footnote later on in the document, using the `[backref name="..."]`
+    shortcode.
+
+	This is footnoted.[ref name="source1"]Source 1[/ref]
+	
+	So is this.[ref name="source2"]Source[/ref]
+	
+	And this one comes from the same source as the first.[backref name="source1"]
+
 *   To force the plugin to display notes at a different location instead of at the bottom
     of the post, use `[references/]`
 
@@ -102,7 +112,60 @@ the "See also:" text.
 
 	See also: Endnotes.
 
+*   If you wish to change how footnotes are styled, you can alter them in your
+    WordPress theme stylesheet, or using JavaScript. The default elements and
+    classes are `<a class="footnoted">` for superscript links to footnotes,
+    `<ol class="footnotes">` for the list of references, and
+    `<li class="footnote">` for each individual footnote. So, for example, to
+    display footnotes at the bottom in a simple list, rather than in individual
+    boxes with "Note" headers, add the following line to your Theme stylesheet:
+    
+    	ol.footnotes li {
+    		background: transparent !important;
+    		padding: 0px !important;
+    		border: none !important;
+    		margin: 0.5em 2em !important;
+    	}
+    
+    The use of `!important` will ensure that it overrides the default styles
+    set up by the plugin.
+
+*   Alternatively, if you want to change the CSS class which is applied to to
+    the footnotes list, you can do so using the `class` parameter on
+    `[references/]`:
+    
+    	This is a test.[ref]Lewis (2000).[/ref]
+    	
+    	<h3>Notes</h3>
+    	
+    	[references class="compact" /]
+    	
+    ... which will produce the following HTML:
+    
+    	<p>This is a test.<sup>[<a href="#test-n-1" class="footnoted"
+    	id="to-test-n-1">1</a>]</sup></p>
+
+    	<h3>Notes</h3>
+    	<ol class="compact">
+    	<li class="footnote" id="test-n-1"><strong><sup>[1]</sup></strong> Lewis
+    	(2000). <a class="note-return" href="#to-test-n-1">&#x21A9;</a></li
+    	></ol>
+
+    Since the default styling is based on children of `ol.footnotes`, those
+    styles will not apply, and you can apply whatever styles you wish to the
+    class that you've created.
+
 == ChangeLog ==
+
+=== Changes from version 2010.0309 to version 2010.0822 ===
+
+* Added `[backref name="..." /]` shortcode allowing you to refer back to a note with an established name
+
+* Eliminated a bug which caused duplicate IDs if you tried to set up multiple sections of footnotes in the same post using repeated `[references/]` codes.
+
+* Added `[references class="foo" /]` syntax, allowing user to supply their own class for CSS re-styling purposes.
+
+* Tested for and verified compatibility up to WordPress 3.0.1 and WordPress trunk.
 
 === Changes from version 2010.0306 to version 2010.0309 ===
 

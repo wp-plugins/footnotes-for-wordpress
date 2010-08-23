@@ -3,7 +3,7 @@
 Plugin Name: Footnotes for WordPress
 Plugin URI: http://projects.radgeek.com/wp-footnotes.php
 Description: easy-to-use fancy footnotes for WordPress posts
-Version: 2010.0816
+Version: 2010.0822
 Author: Charles Johnson
 Author URI: http://radgeek.com/
 License: GPL
@@ -11,9 +11,9 @@ License: GPL
 
 /**
  * @package FootnotesForWordPress
- * @version 2010.0816
+ * @version 2010.0822
  */
-define('FFWP_VERSION', '2010.0816');
+define('FFWP_VERSION', '2010.0822');
 
 class FootnotesForWordPress {
 	var $accumulated;
@@ -22,8 +22,20 @@ class FootnotesForWordPress {
 		$this->accumulated = array();
 
 		$url = $this->plugin_url();
-		wp_register_script('footnote-voodoo', "${url}footnote-voodoo.js", /*depends on=*/ array('jquery'), /*ver=*/ FFWP_VERSION);
-		wp_register_style('footnote-voodoo', "${url}footnote-voodoo.css", /*depends on=*/ array(), /*ver=*/ FFWP_VERSION);
+		
+		// Pre-register scripts and styles
+		wp_register_script(
+			'footnote-voodoo',
+			"${url}footnote-voodoo.js",
+			/*depends on=*/ array('jquery'),
+			/*ver=*/ FFWP_VERSION
+		);
+		wp_register_style(
+			'footnote-voodoo',
+			"${url}footnote-voodoo.css",
+			/*depends on=*/ array(),
+			/*ver=*/ FFWP_VERSION
+		);
 
 		add_shortcode('ref', array(&$this, 'shortcode'));
 		add_shortcode('backref', array(&$this, 'backref'));
@@ -131,9 +143,14 @@ EON;
 		return $ret;
 	}
 	function discharge ($atts = array(), $content = NULL, $code = '') {
+		// Get parameters
+		$atts = shortcode_atts ( array(
+			"class" => "footnotes",
+		), $atts );
+
 		$notes = '';
 		if (count($this->accumulated) > 0) :
-			$notes = "<ol class=\"footnotes\">\n\t"
+			$notes = "<ol class=\"{$atts['class']}\">\n\t"
 				.implode("\n\t", $this->accumulated)
 				."</ol>\n";
 			$this->accumulated = array();
